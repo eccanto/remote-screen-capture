@@ -1,0 +1,7 @@
+# project
+bin/
+build/
+
+# python
+.venv/
+
