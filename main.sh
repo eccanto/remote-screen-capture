@@ -104,24 +104,24 @@ if [[ "${CAPTURE_MODE}" == "s" ]]; then
     run_command_on_device "cd ${DEVICE_DESTINATION}; source .venv/bin/activate; DISPLAY=${DEVICE_DISPLAY} python3 capture.py ${CAPTURE_APPLICATION_ARGUMENTS} -cm s" || true
 
     echo -e "${GREEN_COLOR}copying screenshot...${END_COLOR}"
-    scp -P "${DEVICE_PORT}" "${DEVICE_USER}@${DEVICE_HOSTNAME}:${DEVICE_DESTINATION}/screenshot.png" "${OUTPUT_DIR}/${CAPTURE_DATE}_screenshot.png"
-
-    echo -e "${GREEN_COLOR}copying screenshot.png to clipboard...${END_COLOR}"
-    xclip -selection clipboard -t image/png -i "${OUTPUT_DIR}/${CAPTURE_DATE}_screenshot.png"
+    scp -P "${DEVICE_PORT}" "${DEVICE_USER}@${DEVICE_HOSTNAME}:${DEVICE_DESTINATION}/screenshot.png" "${OUTPUT_DIR}/screenshot_${CAPTURE_DATE}.png"
 
     echo -e "${GREEN_COLOR}copying png to jpg...${END_COLOR}"
-    convert "${OUTPUT_DIR}/${CAPTURE_DATE}_screenshot.png" "${OUTPUT_DIR}/${CAPTURE_DATE}_screenshot.jpg"
+    convert "${OUTPUT_DIR}/screenshot_${CAPTURE_DATE}.png" "${OUTPUT_DIR}/screenshot_${CAPTURE_DATE}.jpg"
+
+    echo -e "${GREEN_COLOR}copying screenshot.png to clipboard...${END_COLOR}"
+    xclip -selection clipboard -t image/png -i "${OUTPUT_DIR}/screenshot_${CAPTURE_DATE}.png"
 else
     run_command_on_device "cd ${DEVICE_DESTINATION}; source .venv/bin/activate; DISPLAY=${DEVICE_DISPLAY} python3 capture.py ${CAPTURE_APPLICATION_ARGUMENTS}" || true
 
     echo -e "${GREEN_COLOR}copying video...${END_COLOR}"
-    scp -P "${DEVICE_PORT}" "${DEVICE_USER}@${DEVICE_HOSTNAME}:${DEVICE_DESTINATION}/capture.avi" "${OUTPUT_DIR}/${CAPTURE_DATE}_capture.avi"
+    scp -P "${DEVICE_PORT}" "${DEVICE_USER}@${DEVICE_HOSTNAME}:${DEVICE_DESTINATION}/capture.avi" "${OUTPUT_DIR}/video_${CAPTURE_DATE}.avi"
 
     echo -e "${GREEN_COLOR}converting .avi to .mp4...${END_COLOR}"
-    ffmpeg -i "${OUTPUT_DIR}/${CAPTURE_DATE}_capture.avi" -hide_banner -loglevel error -c:v copy -c:a copy -y "${OUTPUT_DIR}/${CAPTURE_DATE}_capture.mp4"
+    ffmpeg -i "${OUTPUT_DIR}/video_${CAPTURE_DATE}.avi" -hide_banner -loglevel error -c:v copy -c:a copy -y "${OUTPUT_DIR}/video_${CAPTURE_DATE}.mp4"
 
     echo -e "${GREEN_COLOR}converting .mp4 to .h264...${END_COLOR}"
-    ffmpeg -i "${OUTPUT_DIR}/${CAPTURE_DATE}_capture.avi" -hide_banner -loglevel error -an -vcodec libx264 -crf 23 "${OUTPUT_DIR}/${CAPTURE_DATE}_capture.h264"
+    ffmpeg -i "${OUTPUT_DIR}/video_${CAPTURE_DATE}.avi" -hide_banner -loglevel error -an -vcodec libx264 -crf 23 "${OUTPUT_DIR}/video_${CAPTURE_DATE}.h264"
 fi
 
 echo -e "${BLUE_COLOR}\n:)${END_COLOR}"
