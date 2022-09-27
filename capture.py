@@ -12,7 +12,7 @@ import click
 import coloredlogs
 import psutil
 
-from src.screen_capturer import CaptureMode, record_video, take_screenshot
+from src.screen_capture import CaptureMode, record_video, take_screenshot
 
 
 DEFAULT_FPS = 10.0
@@ -56,9 +56,9 @@ def get_process(process_name):
     type=click.Choice([choice.value for choice in CaptureMode]),
     help=f'Capture mode (choices: {[choice.value for choice in CaptureMode]}, default: {CaptureMode.VIDEO.value})',
     default=CaptureMode.VIDEO.value,
-    callback=lambda _context, _parameter, value: getattr(CaptureMode, value)
-    if value
-    else None,
+    callback=lambda _context, _parameter, value: next(
+        (mode for mode in CaptureMode if mode.value == value), None
+    ),
 )
 def main(monitor, fps, process, capture_mode):
     """Captures monitor screenshot or video."""
@@ -82,7 +82,7 @@ def main(monitor, fps, process, capture_mode):
             monitor,
             fps,
             str(DEFAULT_VIDEO_OUTPUT),
-            callback_stop=lambda: get_process(process) is None,
+            callback_stop=(lambda: get_process(process) is None) if process else None,
         )
     elif capture_mode == CaptureMode.SCREENSHOT:
         take_screenshot(monitor, str(DEFAULT_SCREENSHOT_OUTPUT))
