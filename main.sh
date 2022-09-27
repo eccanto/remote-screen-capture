@@ -52,7 +52,7 @@ function parse_arguments() {
 function run_command_on_device() {
     declare -r command=$1
 
-    ssh -p "${DEVICE_PORT}" "${DEVICE_USER}"@"${DEVICE_HOSTNAME}" "${command}"
+    ssh -t -p "${DEVICE_PORT}" "${DEVICE_USER}"@"${DEVICE_HOSTNAME}" "${command}"
 }
 
 parse_arguments "$@"
@@ -69,9 +69,17 @@ fi
 
 DEVICE_DESTINATION="$(eval echo ~"${DEVICE_USER}")/${DEVICE_DESTINATION}"
 
+# install OS dependencies
+
 if ! command -v ffmpeg &> /dev/null; then
     sudo apt install -y ffmpeg
 fi
+
+if ! command -v convert &> /dev/null; then
+    sudo apt install -y imagemagick
+fi
+
+# main
 
 mkdir -p "${OUTPUT_DIR}"
 
@@ -93,15 +101,18 @@ CAPTURE_DATE=$(date '+%Y.%m.%d_%H.%M.%S')
 
 echo -e "${GREEN_COLOR}starting...${END_COLOR}"
 if [[ "${CAPTURE_MODE}" == "s" ]]; then
-    run_command_on_device "cd ${DEVICE_DESTINATION}; source .venv/bin/activate; DISPLAY=${DEVICE_DISPLAY} python3 capture.py ${CAPTURE_APPLICATION_ARGUMENTS} -cm s"
+    run_command_on_device "cd ${DEVICE_DESTINATION}; source .venv/bin/activate; DISPLAY=${DEVICE_DISPLAY} python3 capture.py ${CAPTURE_APPLICATION_ARGUMENTS} -cm s" || true
 
     echo -e "${GREEN_COLOR}copying screenshot...${END_COLOR}"
     scp -P "${DEVICE_PORT}" "${DEVICE_USER}@${DEVICE_HOSTNAME}:${DEVICE_DESTINATION}/screenshot.png" "${OUTPUT_DIR}/${CAPTURE_DATE}_screenshot.png"
 
     echo -e "${GREEN_COLOR}copying screenshot.png to clipboard...${END_COLOR}"
     xclip -selection clipboard -t image/png -i "${OUTPUT_DIR}/${CAPTURE_DATE}_screenshot.png"
+
+    echo -e "${GREEN_COLOR}copying png to jpg...${END_COLOR}"
+    convert "${OUTPUT_DIR}/${CAPTURE_DATE}_screenshot.png" "${OUTPUT_DIR}/${CAPTURE_DATE}_screenshot.jpg"
 else
-    run_command_on_device "cd ${DEVICE_DESTINATION}; source .venv/bin/activate; DISPLAY=${DEVICE_DISPLAY} python3 capture.py ${CAPTURE_APPLICATION_ARGUMENTS}"
+    run_command_on_device "cd ${DEVICE_DESTINATION}; source .venv/bin/activate; DISPLAY=${DEVICE_DISPLAY} python3 capture.py ${CAPTURE_APPLICATION_ARGUMENTS}" || true
 
     echo -e "${GREEN_COLOR}copying video...${END_COLOR}"
     scp -P "${DEVICE_PORT}" "${DEVICE_USER}@${DEVICE_HOSTNAME}:${DEVICE_DESTINATION}/capture.avi" "${OUTPUT_DIR}/${CAPTURE_DATE}_capture.avi"
