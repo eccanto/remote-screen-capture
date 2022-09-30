@@ -79,6 +79,10 @@ if ! command -v convert &> /dev/null; then
     sudo apt install -y imagemagick
 fi
 
+if ! command -v xclip &> /dev/null; then
+    sudo apt install -y xclip
+fi
+
 # main
 
 mkdir -p "${OUTPUT_DIR}"
@@ -93,7 +97,11 @@ if ! run_command_on_device "ls ${DEVICE_DESTINATION}"; then
     scp -r -P "${DEVICE_PORT}" {capture.py,requirements.txt,src} "${DEVICE_USER}"@"${DEVICE_HOSTNAME}":"${DEVICE_DESTINATION}"
 
     echo -e "${GREEN_COLOR}installing dependencies (${DEVICE_DESTINATION})...${END_COLOR}"
-    run_command_on_device "sudo apt install python3 python3-pip python3-venv"
+    if [[ "${DEVICE_USER}" == "root" ]]; then
+        run_command_on_device "apt install python3 python3-pip python3-venv"
+    else
+        run_command_on_device "sudo apt install python3 python3-pip python3-venv"
+    fi
     run_command_on_device "cd ${DEVICE_DESTINATION}; python3 -m venv .venv; source .venv/bin/activate; pip3 install -r requirements.txt"
 fi
 

@@ -59,11 +59,7 @@ def take_screenshot(monitor_number, output):
     """
     screen_size = _get_screen_size_monitor(monitor_number)
 
-    logging.info(
-        'capturing screenshot "%s" (size=%s) (Press "Ctrl+C to stop")',
-        monitor_number,
-        screen_size,
-    )
+    logging.info('capturing screenshot "%s" (size=%s)', monitor_number, screen_size)
 
     screenshot = _take_screenshot_monitor(monitor_number)
     screenshot.save(output)
@@ -79,11 +75,7 @@ def record_video(monitor_number, fps, output, callback_stop=None):
     """
     screen_size = _get_screen_size_monitor(monitor_number)
 
-    logging.info(
-        'capturing screen "%s" (size=%s) (Press "Ctrl+C to stop")',
-        monitor_number,
-        screen_size,
-    )
+    logging.info('capturing screen "%s" (size=%s) (Press "Ctrl+C to stop")', monitor_number, screen_size)
 
     fourcc = cv2.VideoWriter_fourcc(*'MJPG')
     output_video = cv2.VideoWriter(output, fourcc, fps, screen_size)
